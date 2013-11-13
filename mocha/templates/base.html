@@ -1,0 +1,7 @@
+{% load tabs %}
+{% block navigation %}
+<ul id="top-nav">
+    <li><a href="/createTopic.html" class="{% ifactivetab "topnav" "create_topic" %}active{% else %}inactive{% endifactivetab %}">Create Topic</a></li>
+    <li><a href="/" class="{% ifactivetab "topnav" "search_topic" %}active{% else %}inactive{% endifactivetab %}">Search Topic</a></li>
+</ul>
+{% endblock %}

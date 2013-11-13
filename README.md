@@ -25,3 +25,10 @@ dpkg-reconfigure mysql-server-5.5
   970  sudo pip install MySQL-python
   975  inst git-core
 
+
+
+To_do on remote :
+install django tabs using following command :
+svn checkout http://django-tabs.googlecode.com/svn/trunk/ django-tabs-read-only
+in settings.py add 'tabs' to INSTALLED_APPS
+

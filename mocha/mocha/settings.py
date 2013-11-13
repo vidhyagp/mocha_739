@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mocha_models',
+    'tabs',
 )
 
 MIDDLEWARE_CLASSES = (

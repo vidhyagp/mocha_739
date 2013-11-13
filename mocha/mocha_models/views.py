@@ -1,8 +1,12 @@
 from django.core.context_processors import csrf
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from mocha_models.models import *
+from mocha_models.forms import *
+from django.views.generic.edit import FormView
 
 def loginview(request):
     c = {}
@@ -37,6 +41,23 @@ def sign_up_in(request):
     else:
     	return redirect("/login/")
 
+def tabs(request):
+     return render_to_response('index.html')
+
+def create_topic(request):
+    if request.method == 'POST': # If the form has been submitted...
+        form = TopicContentForm(request.POST) # A form bound to the POST data
+        #if form.is_valid(): # All validation rules pass
+            # Process the data in form.cleaned_data
+            # ...
+            #return HttpResponseRedirect('/thanks/') # Redirect after POST
+    else:
+        form = TopicContentForm() # An unbound form
+
+    return render(request, 'createTopic.html', {
+        'form': form,
+    })
+
 @login_required(login_url='/login/')
 def secured(request):
-    return render_to_response("secure.html")
+    return render_to_response("index.html")

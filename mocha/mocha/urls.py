@@ -13,4 +13,6 @@ urlpatterns = patterns('',
     url(r'^auth/', 'mocha_models.views.auth_and_login'),
     url(r'^signup/', 'mocha_models.views.sign_up_in'),
     url(r'^$', 'mocha_models.views.secured'),
+    url(r'^tabs', 'mocha_models.views.tabs'),
+    url(r'^createTopic', 'mocha_models.views.create_topic'),
 )
