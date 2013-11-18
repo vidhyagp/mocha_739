@@ -30,5 +30,7 @@ dpkg-reconfigure mysql-server-5.5
 To_do on remote :
 install django tabs using following command :
 svn checkout http://django-tabs.googlecode.com/svn/trunk/ django-tabs-read-only
+in tabs.py change _ACTIVETABS to ACTIVETABS
 in settings.py add 'tabs' to INSTALLED_APPS
+run 'sudo python setup.py install'
 
