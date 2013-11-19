@@ -34,3 +34,9 @@ in tabs.py change _ACTIVETABS to ACTIVETABS
 in settings.py add 'tabs' to INSTALLED_APPS
 run 'sudo python setup.py install'
 
+====Wiki=====
+
+1. JPype to interface python and Java
+
+
+===Tasks====
