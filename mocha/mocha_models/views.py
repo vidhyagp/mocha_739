@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 from django.core.context_processors import csrf
 from django.shortcuts import render_to_response, redirect, render
 from django.contrib.auth import authenticate, login
@@ -10,25 +11,35 @@ from django.views.generic.edit import FormView
 from django.db import connections, transaction
 from django.http import Http404
 from django.db import connection
+import socket
+HOST = "localhost"
+PORT = 8080
 
 def loginview(request):
-    c = {}
-    c.update(csrf(request))
-    return render_to_response('login.html', c)
+	c = {}
+	c.update(csrf(request))
+	return render_to_response('login.html', c)
 
 def auth_and_login(request, onsuccess='/', onfail='/login/'):
-    user = authenticate(username=request.POST['email'], password=request.POST['password'])
-    if user is not None:
-        login(request, user)
-        return redirect(onsuccess)
-    else:
-        return redirect(onfail)  
+	user = authenticate(username=request.POST['email'], password=request.POST['password'])
+	if user is not None:
+	    login(request, user)
+	    return redirect(onsuccess)
+	else:
+	    return redirect(onfail)  
 
 def create_user(username, email, password):
-    user = User(username=username, email=email)
-    user.set_password(password)
-    user.save()
-    return user
+	user = User(username=username, email=email)
+	#user.set_password(password)
+	#user.save()
+	global HOST
+	global PORT
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect((HOST, PORT))
+	sock.sendall("+UP: " + username + " " + password)
+	sock.close()
+	return user
+
 
 def user_exists(username):
     user_count = User.objects.filter(username=username).count()
@@ -51,9 +62,15 @@ def sign_up_in(request):
 def create_topic(request):
     if request.method == 'POST': # If the form has been submitted...
         form = TopicContentForm(request.POST) # A form bound to the POST data
-	obj = form.save(commit=False)
-	obj.userid = request.user
-	obj.save()
+	#obj = form.save(commit=False)
+	#obj.userid = request.user
+	#obj.save()
+	global HOST
+    	global PORT
+    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect((HOST, PORT))
+    	sock.sendall("+UT:" + str(request.user) + " " + str(request.POST['topic']))
+	sock.close()
 	return redirect("/home/")
     else:
         form = TopicContentForm() # An unbound form
@@ -63,9 +80,15 @@ def create_topic(request):
 def subscribe_topic(request):
     if request.method == 'POST': # If the form has been submitted...
         form = UserTopicForm(request.POST) # A form bound to the POST data
-	obj = form.save(commit=False)
-	obj.userid = request.user
-	obj.save()
+	#obj = form.save(commit=False)
+	#obj.userid = request.user
+	#obj.save()
+	global HOST
+    	global PORT
+    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect((HOST, PORT))
+ 	sock.sendall("+TC : " + str(request.POST['topic']) + " " + #str(request.POST['content']))	
+	sock.close()
 	return redirect("/home/")
     else:
         form = UserTopicForm() # An unbound form
