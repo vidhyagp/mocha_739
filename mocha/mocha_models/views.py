@@ -12,8 +12,11 @@ from django.db import connections, transaction
 from django.http import Http404
 from django.db import connection
 import socket
+from pprint import pprint
+
 HOST = "localhost"
 PORT = 8080
+CONTENT_SIZE = 10000
 
 def loginview(request):
 	c = {}
@@ -36,7 +39,7 @@ def create_user(username, email, password):
 	global PORT
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
-	sock.sendall("+UP: " + username + " " + password)
+	sock.sendall("+SUP: " + username + " " + password)
 	sock.close()
 	return user
 
@@ -69,7 +72,8 @@ def create_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
-    	sock.sendall("+UT:" + str(request.user) + " " + str(request.POST['topic']))
+    	sock.sendall("+SUT:" + str(request.user) + " " + str(request.POST['topic']) + " " + str(request.POST['content']))
+	print repr(request.POST)	
 	sock.close()
 	return redirect("/home/")
     else:
@@ -87,7 +91,8 @@ def subscribe_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
- 	sock.sendall("+TC : " + str(request.POST['topic']) + " " + #str(request.POST['content']))	
+ 	sock.sendall("+STC : " + str(request.POST['topic'])) 
+	print repr(request.POST)
 	sock.close()
 	return redirect("/home/")
     else:
@@ -114,13 +119,28 @@ def dbfetchall(sql, params=[]):
     ]
 
 def dbfetchcontent(topic):
-   rows = dbfetchall('select content from topic_content where topic = \'' + str(topic) + '\' ORDER BY timestamp') 
-   return [c['content'] for c in rows] 
+   #rows = dbfetchall('select content from topic_content where topic = \'' + str(topic) + '\' ORDER BY timestamp')
+   #return [c['content'] for c in rows]
+   global CONTENT_SIZE 
+   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   sock.connect((HOST, PORT))
+   sock.sendall("+RTC : " + str(topic))
+   data = sock.recv(CONTENT_SIZE)
+   sock.close(); 
+   #return [c['content'] for c in rows] 
+   return data
 
 
 def dbfetchtopics(username):
-   rows = dbfetchall('select topic from user_topic where userid = \'' + str(username) + '\' ORDER BY timestamp') 
-   return [c['topic'] for c in rows] 
+   #rows = dbfetchall('select topic from user_topic where userid = \'' + str(username) + '\' ORDER BY timestamp') 
+   #return [c['topic'] for c in rows]
+   global TOPIC_SIZE
+   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   sock.connect((HOST, PORT))
+   sock.sendall("+RUT : " + str(username))
+   data = sock.recv(TOPIC_SIZE)
+   sock.close(); 
+   return data
 
 
 @login_required(login_url='/login/')
