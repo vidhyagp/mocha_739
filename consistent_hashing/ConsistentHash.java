@@ -1,15 +1,36 @@
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.SortedMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
-public class ConsistentHash {
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.StartInstancesRequest;
+import com.amazonaws.services.ec2.model.StartInstancesResult;
+
+
+public class ConsistentHashing {
 	
  private long hashMaxValue;
+ private AmazonEC2 ec2;
 	
 //Integer-> point on the circle, String-> ServerID(Physical Node). For a server, this 
 //  hashmap will have three entries for the three virtual nodes.
@@ -18,9 +39,44 @@ public class ConsistentHash {
  private final TreeMap<String, ArrayList<Double>> id2Point = 
 		 new TreeMap<String, ArrayList<Double>>();
  
+ private HashMap<String,String> instance2IPMap = new HashMap<String,String>();
+ 
  public ConsistentHash()
  {
     this.hashMaxValue = Long.MAX_VALUE;
+ }
+ 
+ public void startInstances (ArrayList<String> instanceList) throws IOException
+ {
+	 AWSCredentials credentials = new PropertiesCredentials(
+             InlineTaggingCodeSampleApp.class.getResourceAsStream("AwsCredentials.properties"));
+
+      ec2 = new AmazonEC2Client(credentials);
+		Region usEast1 = Region.getRegion(Regions.US_EAST_1);
+		ec2.setRegion(usEast1);
+		//Start instances
+		StartInstancesRequest requests = new StartInstancesRequest().withInstanceIds(instanceList);
+		StartInstancesResult startresult = ec2.startInstances(requests);
+		
+		//Describe instances
+		DescribeInstancesResult describeInstancesRequest = ec2.describeInstances();
+        List<Reservation> reservations = describeInstancesRequest.getReservations();
+        Set<Instance> instances = new HashSet<Instance>();
+        // add all instances to a Set.
+        for (Reservation reservation : reservations) {
+         instances.addAll(reservation.getInstances());
+       }
+        
+        for (Instance ins : instances){        
+         String instanceId = ins.getInstanceId();
+         if(instanceList.contains(instanceId)){
+         	this.instance2IPMap.put(instanceId, ins.getPublicIpAddress());
+         	this.add(instanceId);
+         }
+        }
+		
+		
+	 
  }
  /** Helper function for calculating hash
   *  
@@ -158,28 +214,64 @@ public class ConsistentHash {
  {
 	 return this.id2Point.get(key);
  }
-  
  
- public static void main(String[] args)
+ public String getIP(String instance)
+ {
+	 return this.instance2IPMap.get(instance);
+ }
+  // UP- UT-TC
+ 
+ public static void main(String[] args) throws Exception
  {
 	 ConsistentHash ch = new ConsistentHash();
-	 ch.add("salini");
-	 System.out.println("Next");
-	 ch.add("vinitha");
-	 System.out.println("Next");
-	 ch.add("siva");
-	 System.out.println("Next");
-	 ch.add("vidhya");
-	 System.out.println("Next");
-	 ch.add("192.164.67.89");
+	 ArrayList<String> instanceRequests = new ArrayList<String>();
+	// ch.startInstances(new ArrayList(Arrays.asList("i-699c8111")));
 	 
-	 System.out.println(ch.getValue_id2Pt("salini"));
-	 System.out.println(ch.getValue_id2Pt("vinitha"));
-	 System.out.println(ch.getValue_id2Pt("siva"));
-	 System.out.println(ch.getValue_id2Pt("vidhya"));
-	 System.out.println(ch.getValue_id2Pt("192.164.67.89"));
-	 
-	System.out.println(ch.get("shanlus"));
+	 String sCurrentLine;
+	BufferedReader br = new BufferedReader
+			(new FileReader("/home/sivas/Desktop/739/mocha_webserver/mocha_1/" +
+					"consistent_hashing/instances.txt"));
+
+		while ((sCurrentLine = br.readLine()) != null) {
+			instanceRequests.add(sCurrentLine);
+		}
+		ch.startInstances(instanceRequests);
+		ServerSocket listener = new ServerSocket(8080);
+		 while(true)
+		 {
+			 Socket socket = listener.accept();
+			 BufferedReader in = 
+						 new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			 String input = in.readLine();
+			 String[] splits = input.split(";");
+			 if(splits[0].equalsIgnoreCase("s"))
+			 {
+				 if(splits[1].equalsIgnoreCase("tc"))
+				 {
+					String instanceId = ch.get(splits[3]);
+					String publicIP = ch.getIP(instanceId);
+					 Socket s = new Socket(publicIP, 9090);
+				      PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+				      out.println(input);
+				      s.close();
+					 
+				 }
+				 else 
+				 {
+					 String instanceId = ch.get(splits[2]);
+					 String publicIP = ch.getIP(instanceId);
+					 Socket s = new Socket(publicIP, 9090);
+					 PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+					 out.println(input);
+					 s.close();
+				 }
+				
+			 }
+			 
+		 }
+	
+	
+	
 	 
  }
 
