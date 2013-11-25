@@ -11,12 +11,15 @@ from django.views.generic.edit import FormView
 from django.db import connections, transaction
 from django.http import Http404
 from django.db import connection
-import socket
+import socket, errno, time
 from pprint import pprint
 
 HOST = "localhost"
 PORT = 8080
-CONTENT_SIZE = 10000
+#CONTENT_SIZE = 10000
+#TOPIC_SIZE = 1000
+CONTENT_SIZE = 512
+TOPIC_SIZE = 512
 
 def loginview(request):
 	c = {}
@@ -72,7 +75,7 @@ def create_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
-    	sock.sendall("+SUT:" + str(request.user) + " " + str(request.POST['topic']) + " " + str(request.POST['content']))
+    	sock.sendall("+S;TC;" + str(request.user) + ";" + str(request.POST['topic']) + ";" + str(request.POST['content']))
 	print repr(request.POST)	
 	sock.close()
 	return redirect("/home/")
@@ -91,7 +94,7 @@ def subscribe_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
- 	sock.sendall("+STC : " + str(request.POST['topic'])) 
+ 	sock.sendall("+S;UT;" + str(request.POST['topic'])) 
 	print repr(request.POST)
 	sock.close()
 	return redirect("/home/")
@@ -124,11 +127,12 @@ def dbfetchcontent(topic):
    global CONTENT_SIZE 
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    sock.connect((HOST, PORT))
-   sock.sendall("+RTC : " + str(topic))
+   print ("Sending +RTC : " + str(topic)) 
+   sock.sendall("+R;TC;" + str(topic) + "\n")
    data = sock.recv(CONTENT_SIZE)
-   sock.close(); 
-   #return [c['content'] for c in rows] 
+   sock.close()
    return data
+   return topic
 
 
 def dbfetchtopics(username):
@@ -137,10 +141,12 @@ def dbfetchtopics(username):
    global TOPIC_SIZE
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    sock.connect((HOST, PORT))
-   sock.sendall("+RUT : " + str(username))
+   print ("Sending +RUT : " + str(username)) 
+   sock.sendall("+R;UT;" + str(username) + "\n")
    data = sock.recv(TOPIC_SIZE)
-   sock.close(); 
+   sock.close()
    return data
+   return username
 
 
 @login_required(login_url='/login/')
