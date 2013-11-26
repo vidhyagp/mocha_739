@@ -27,7 +27,7 @@ import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 
 
-public class ConsistentHashing {
+public class ConsistentHash {
 	
  private long hashMaxValue;
  private AmazonEC2 ec2;

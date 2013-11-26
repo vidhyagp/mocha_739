@@ -42,7 +42,7 @@ def create_user(username, email, password):
 	global PORT
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
-	sock.sendall("+SUP: " + username + " " + password)
+	sock.sendall("S;UP; " + username + " " + password)
 	sock.close()
 	return user
 
@@ -75,7 +75,7 @@ def create_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
-    	sock.sendall("+S;TC;" + str(request.user) + ";" + str(request.POST['topic']) + ";" + str(request.POST['content']))
+    	sock.sendall("S;TC;" + str(request.user) + ";" + str(request.POST['topic']) + ";" + str(request.POST['content']))
 	print repr(request.POST)	
 	sock.close()
 	return redirect("/home/")
@@ -94,7 +94,7 @@ def subscribe_topic(request):
     	global PORT
     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
- 	sock.sendall("+S;UT;" + str(request.POST['topic'])) 
+ 	sock.sendall("S;UT;" + str(request.POST['topic'])) 
 	print repr(request.POST)
 	sock.close()
 	return redirect("/home/")
@@ -122,13 +122,13 @@ def dbfetchall(sql, params=[]):
     ]
 
 def dbfetchcontent(topic):
-   #rows = dbfetchall('select content from topic_content where topic = \'' + str(topic) + '\' ORDER BY timestamp')
-   #return [c['content'] for c in rows]
+   rows = dbfetchall('select content from topic_content where topic = \'' + str(topic) + '\' ORDER BY timestamp')
+   return [c['content'] for c in rows]
    global CONTENT_SIZE 
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    sock.connect((HOST, PORT))
    print ("Sending +RTC : " + str(topic)) 
-   sock.sendall("+R;TC;" + str(topic) + "\n")
+   sock.sendall("R;TC;" + str(topic) + "\n")
    data = sock.recv(CONTENT_SIZE)
    sock.close()
    return data
@@ -136,13 +136,13 @@ def dbfetchcontent(topic):
 
 
 def dbfetchtopics(username):
-   #rows = dbfetchall('select topic from user_topic where userid = \'' + str(username) + '\' ORDER BY timestamp') 
-   #return [c['topic'] for c in rows]
+   rows = dbfetchall('select topic from user_topic where userid = \'' + str(username) + '\' ORDER BY timestamp') 
+   return [c['topic'] for c in rows]
    global TOPIC_SIZE
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    sock.connect((HOST, PORT))
    print ("Sending +RUT : " + str(username)) 
-   sock.sendall("+R;UT;" + str(username) + "\n")
+   sock.sendall("R;UT;" + str(username) + "\n")
    data = sock.recv(TOPIC_SIZE)
    sock.close()
    return data
