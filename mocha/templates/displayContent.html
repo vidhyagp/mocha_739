@@ -1,0 +1,9 @@
+{% load tabs %}
+{% block navigation %}
+<h2> {{topic}} </h2>
+<ul id="top-nav">
+    {% for u in content %}
+	<li> {{u}} </li>
+    {% endfor %}
+</ul>
+{% endblock %}

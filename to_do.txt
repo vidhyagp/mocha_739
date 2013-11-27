@@ -1,0 +1,7 @@
+======Tasks====
+
+1. Consistent Hashing - Done
+2. EC2- Get Server machines
+3. Jpype to Consistent Hashing
+ The task is .. given a of topic from the  UI find the server which contains the data (using consistent hashing). Now consistent hashing is coded in Java. We need to use JPype for interfacing..
+4. Backend java processes to control replication - We cant replicate to all the "3" server instantly. We proposed eventual consistency. So there has to be a background process (a separate Java program) to handle this. For this.. take 2-3 machines in EC2.. setup databases.,. and add data in one.. try replicating in others (incrementally)..
