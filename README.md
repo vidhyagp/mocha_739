@@ -34,3 +34,6 @@ in tabs.py change _ACTIVETABS to ACTIVETABS
 in settings.py add 'tabs' to INSTALLED_APPS
 run 'sudo python setup.py install'
 
+
+foreman start --use-python=/var/www/virtualenv/bin/python
+git remote add heroku [address]
