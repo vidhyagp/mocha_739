@@ -64,11 +64,11 @@ WSGI_APPLICATION = 'mocha.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ['mocha'],                      # Or path to database file if using sqlite3.
-        'USER': os.environ['root'],                      # Not used with sqlite3.
-        'PASSWORD': os.environ['mocha'],                  # Not used with sqlite3.
+        'NAME': 'mocha',                      # Or path to database file if using sqlite3.
+        'USER': 'root',                      # Not used with sqlite3.
+        'PASSWORD': 'mocha',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': os.environ['3306'],                      
+        'PORT': '3306',                      
     }
 }
 
