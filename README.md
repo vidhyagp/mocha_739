@@ -37,3 +37,29 @@ run 'sudo python setup.py install'
 
 foreman start --use-python=/var/www/virtualenv/bin/python
 git remote add heroku [address]
+
+
+
+Install Celery
+--------------
+refer http://www.celeryproject.org/instal/
+pip install Celery
+pip install django-celery
+pip install djkombu
+
+Add to INSTALLED_APPS
+'djcelery'
+'kombu.transport.django'
+'djkombu'
+
+Add the 3 lines below
+import djcelery
+djcelery.setup_loader()
+BROKER_URL="django://"
+
+
+Execute the following two commands
+
+python manage.py syncdb
+python manage.py celeryd -l info
+
